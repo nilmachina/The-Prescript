@@ -2,39 +2,80 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PRESCRIPT TERMINAL</title>
+<title>PRESCRIPT</title>
+
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 
 <style>
 body {
-  background: black;
-  color: white;
-  font-family: monospace;
+  margin: 0;
+  background: #000814;
+  color: #7fdfff;
+  font-family: 'VT323', monospace;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  margin: 0;
 }
 
 .terminal {
+  width: 800px;
   text-align: center;
-  max-width: 800px;
 }
 
 .symbol {
-  font-size: 48px;
-  margin-bottom: 40px;
+  width: 120px;
+  margin-bottom: 30px;
+  filter: drop-shadow(0 0 8px #4cc9ff);
 }
 
 .meta {
-  font-size: 14px;
+  font-size: 20px;
   opacity: 0.7;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  letter-spacing: 2px;
 }
 
-.text-display {
+.display {
+  font-size: 32px;
+  letter-spacing: 2px;
+  min-height: 120px;
+  white-space: pre-line;
+  text-shadow: 0 0 6px #4cc9ff;
+}
+
+.status {
+  margin-top: 20px;
+  font-size: 26px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+button {
+  margin: 15px;
+  padding: 10px 25px;
+  background: transparent;
+  border: 2px solid #7fdfff;
+  color: #7fdfff;
+  font-family: 'VT323', monospace;
   font-size: 22px;
-  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: #7fdfff;
+  color: #000814;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.85; }
+  100% { opacity: 1; }
+}
+
+.flicker {
+  animation: flicker 0.1s infinite;
 }
 </style>
 </head>
@@ -42,55 +83,95 @@ body {
 <body>
 
 <div class="terminal">
-  <div class="symbol">⚖</div>
-  <div class="meta" id="meta"></div>
-  <div class="text-display" id="prescript"></div>
+  <!-- Replace src with your actual Index symbol image -->
+  <img src="index-symbol.png" class="symbol">
+
+  <div class="meta" id="meta">Awaiting Prescript...</div>
+
+  <div class="display" id="prescript"></div>
+
+  <div class="status" id="status">_CLEAR.</div>
+
+  <div>
+    <button onclick="issuePrescript()">Receive Prescript</button>
+    <button onclick="resetTerminal()">Reset</button>
+  </div>
 </div>
 
 <script>
+
 const verbs = [
-  "ELIMINATE",
-  "OBSERVE",
-  "DELIVER",
-  "APPROACH",
-  "PROTECT",
-  "INTERCEPT"
+  "Approach",
+  "Observe",
+  "Deliver",
+  "Escort",
+  "Disrupt",
+  "Replace",
+  "Mark",
+  "Delay",
+  "Preserve",
+  "Confiscate"
 ];
 
-const objects = [
-  "THE DESIGNATED TARGET",
-  "THE MARKED INDIVIDUAL",
-  "THE SPECIFIED LOCATION",
-  "THE ASSIGNED SUBJECT",
-  "THE DESIGNATED ENTITY"
+const adjectives = [
+  "designated",
+  "unmarked",
+  "forgotten",
+  "misplaced",
+  "errant",
+  "silent",
+  "fractured",
+  "designated secondary",
+  "unverified",
+  "adjacent"
+];
+
+const nouns = [
+  "individual",
+  "location",
+  "object",
+  "subject",
+  "entity",
+  "structure",
+  "process",
+  "record",
+  "witness",
+  "container"
 ];
 
 const conditions = [
-  "WITHOUT HESITATION",
-  "IMMEDIATELY",
-  "WITHOUT QUESTION",
-  "WITHOUT DELAY",
-  "IN SILENCE"
+  "without recognition",
+  "prior to observation",
+  "in the presence of witnesses",
+  "before the third interval",
+  "without deviation",
+  "until instructed otherwise",
+  "without acknowledging the result",
+  "without confirming completion",
+  "after verifying silence",
+  "without generating suspicion"
 ];
 
+function randomFrom(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
 function generatePrescript() {
-  const verb = verbs[Math.floor(Math.random() * verbs.length)];
-  const object = objects[Math.floor(Math.random() * objects.length)];
-  const condition = conditions[Math.floor(Math.random() * conditions.length)];
 
-  return `${verb} ${object} ${condition}_CLEAR.`;
+  const line1 = `${randomFrom(verbs)} the ${randomFrom(adjectives)} ${randomFrom(nouns)}.`;
+
+  const line2 = `Ensure compliance ${randomFrom(conditions)}.`;
+
+  const line3 = `Failure to comply will result in reassignment.`;
+
+  return `${line1}\n${line2}\n\n${line3}`;
 }
 
-function generateMeta() {
-  const id = Math.floor(Math.random() * 1000000);
-  const timestamp = new Date().toISOString();
-  return `PRESCRIPT ID: ${id} | ISSUED: ${timestamp}`;
-}
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";
 
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ_ ";
-
-function shuffleReveal(element, finalText) {
+function shuffleReveal(element, finalText, callback) {
   let iteration = 0;
+  element.classList.add("flicker");
 
   const interval = setInterval(() => {
     element.innerText = finalText
@@ -99,23 +180,46 @@ function shuffleReveal(element, finalText) {
         if (index < iteration) {
           return finalText[index];
         }
+        if (letter === "\n") return "\n";
         return chars[Math.floor(Math.random() * chars.length)];
       })
       .join("");
 
     if (iteration >= finalText.length) {
       clearInterval(interval);
+      element.classList.remove("flicker");
+      if (callback) callback();
     }
 
-    iteration += 0.5;
-  }, 35);
+    iteration += 0.6;
+  }, 20);
 }
 
-window.onload = () => {
+function issuePrescript() {
   const prescript = generatePrescript();
-  document.getElementById("meta").innerText = generateMeta();
-  shuffleReveal(document.getElementById("prescript"), prescript);
-};
+  const id = Math.floor(Math.random() * 999999);
+  const timestamp = new Date().toISOString();
+
+  document.getElementById("meta").innerText =
+    `PRESCRIPT ID: ${id}   |   ISSUED: ${timestamp}`;
+
+  document.getElementById("status").style.opacity = 0;
+
+  shuffleReveal(
+    document.getElementById("prescript"),
+    prescript,
+    () => {
+      document.getElementById("status").style.opacity = 1;
+    }
+  );
+}
+
+function resetTerminal() {
+  document.getElementById("prescript").innerText = "";
+  document.getElementById("meta").innerText = "Awaiting Prescript...";
+  document.getElementById("status").style.opacity = 0;
+}
+
 </script>
 
 </body>
